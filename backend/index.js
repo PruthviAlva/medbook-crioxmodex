@@ -12,6 +12,8 @@ const adminRoutes = require("./routes/adminRoutes");
 const slotRoutes = require("./routes/slotRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 
+require("./expiryJob");
+
 app.use('/admin', adminRoutes);
 app.use('/', slotRoutes);
 app.use('/', bookingRoutes);

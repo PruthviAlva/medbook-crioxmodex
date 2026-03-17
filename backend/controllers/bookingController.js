@@ -10,6 +10,14 @@ exports.bookSlot = async (req, res) => {
 
         await client.query("BEGIN");
 
+        // Step 1: Create PENDING booking
+        const pendingBooking = await client.query(
+            `INSERT INTO bookings (slot_id, user_name, status)
+       VALUES ($1, $2, 'PENDING') RETURNING *`,
+            [slot_id, user_name]
+        );
+
+        // Step 2: Lock slot
         const slotResult = await client.query(
             "SELECT * FROM slots WHERE id = $1 FOR UPDATE",
             [slot_id]
@@ -25,23 +33,30 @@ exports.bookSlot = async (req, res) => {
                 [slot_id]
             );
 
-            const booking = await client.query(
-                `INSERT INTO bookings (slot_id, user_name, status)
-         VALUES ($1, $2, 'CONFIRMED') RETURNING *`,
-                [slot_id, user_name]
+            // Step 3: Confirm booking
+            await client.query(
+                "UPDATE bookings SET status = 'CONFIRMED' WHERE id = $1",
+                [pendingBooking.rows[0].id]
             );
 
             await client.query("COMMIT");
-            return res.json(booking.rows[0]);
+
+            return res.json({
+                message: "Booking Confirmed",
+                bookingId: pendingBooking.rows[0].id,
+            });
         } else {
-            const booking = await client.query(
-                `INSERT INTO bookings (slot_id, user_name, status)
-         VALUES ($1, $2, 'FAILED') RETURNING *`,
-                [slot_id, user_name]
+            await client.query(
+                "UPDATE bookings SET status = 'FAILED' WHERE id = $1",
+                [pendingBooking.rows[0].id]
             );
 
             await client.query("COMMIT");
-            return res.json(booking.rows[0]);
+            
+            return res.json({
+                message: "Booking Failed",
+                bookingId: pendingBooking.rows[0].id,
+            });
         }
     } catch (error) {
         await client.query("ROLLBACK");
