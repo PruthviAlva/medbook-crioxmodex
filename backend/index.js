@@ -7,6 +7,15 @@ const cors = require('cors');
 app.use(cors());
 app.use(express.json());
 
+// Import routes
+const adminRoutes = require("./routes/adminRoutes");
+const slotRoutes = require("./routes/slotRoutes");
+const bookingRoutes = require("./routes/bookingRoutes");
+
+app.use('/admin', adminRoutes);
+app.use('/slots', slotRoutes);
+app.use('/bookings', bookingRoutes);
+
 app.get('/', (req, res) => {
     res.send("MedBook API Running 🚀");
 });
