@@ -13,8 +13,8 @@ const slotRoutes = require("./routes/slotRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 
 app.use('/admin', adminRoutes);
-app.use('/slots', slotRoutes);
-app.use('/bookings', bookingRoutes);
+app.use('/', slotRoutes);
+app.use('/', bookingRoutes);
 
 app.get('/', (req, res) => {
     res.send("MedBook API Running 🚀");
